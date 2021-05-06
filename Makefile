@@ -167,7 +167,13 @@ clean:
 #
 #  Build Rules
 #
+<<<<<<< HEAD
 initramfs.bin: $(wildcard packages/*.py) Makefile
 	$(PYTHON3) packages/__init__.py                       \
+=======
+build/penguin.initramfs: $(wildcard initramfs/*.py) Makefile
+	mkdir -p build
+	$(PYTHON3) initramfs/__init__.py                       \
+>>>>>>> b1a1f79 (Rename packages directory to initramfs)
 		--build-dir build/initramfs                   \
 		-o initramfs.bin

@@ -4,8 +4,13 @@
 
 ![screenshot](screenshot.png)
 
+<<<<<<< HEAD
 Kerla is a monolithic operating system kernel written from scratch in Rust which aims to be
 compatible with the Linux ABI, that is, it runs Linux binaries without any modifications.
+=======
+## Running a Docker Image (experimental)
+You can run a Docker image as a root file system (not as a container!) on Penguin Kenrel instead of our initramfs built from `initramfs` directory.
+>>>>>>> b1a1f79 (Rename packages directory to initramfs)
 
 - Implements *NIX process concepts: context switching, signals, `fork(2)`, `execve(2)`, `wait4(2)`, etc.
 - Supports commonly used system calls like `write(2)`, `stat(2)`, `mmap(2)`, `pipe(2)`, `poll(2)`, ...
