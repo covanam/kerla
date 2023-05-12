@@ -319,12 +319,5 @@ impl FileSystem for InitramFs {
 }
 
 pub fn init() {
-    INITRAM_FS.init(|| {
-        let image = include_bytes!(concat!("../../", env!("INITRAMFS_PATH")));
-        if image.is_empty() {
-            panic!("initramfs is not embedded");
-        }
-
-        Arc::new(InitramFs::new(image))
-    });
+    INITRAM_FS.init(|| Arc::new(InitramFs::new(include_bytes!("../../initramfs.bin"))));
 }

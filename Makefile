@@ -21,27 +21,6 @@ ifeq ($(V),)
 .SILENT:
 endif
 
-# $(IMAGE): Use a Docker image for initramfs.
-ifeq ($(IMAGE),)
-INITRAMFS_PATH := build/testing.initramfs
-export INIT_SCRIPT := /bin/sh
-else
-IMAGE_FILENAME := $(subst /,.s,$(IMAGE))
-INITRAMFS_PATH := build/$(IMAGE_FILENAME).initramfs
-export INIT_SCRIPT := $(shell tools/inspect-init-in-docker-image.py $(IMAGE))
-endif
-
-DUMMY_INITRAMFS_PATH := build/dummy-for-lint.initramfs
-
-# Set the platform name for docker image cross compiling.
-ifeq ($(ARCH),x64)
-docker_platform = linux/amd64
-endif
-
-ifeq ($(docker_platform),)
-$(error "docker_platform is not set for $(ARCH)!")
-endif
-
 topdir      := $(PWD)
 build_mode  := $(if $(RELEASE),release,debug)
 target_json := kernel/arch/$(ARCH)/$(ARCH).json
@@ -67,10 +46,6 @@ TESTCARGOFLAGS += --config "target.$(ARCH).runner = './tools/run-unittests.sh'"
 WATCHFLAGS += --clear
 
 export CARGO_FROM_MAKE=1
-export INITRAMFS_PATH
-export ARCH
-export PYTHON3
-export NM
 
 #
 #  Build Commands
@@ -97,7 +72,7 @@ build-crate:
 	$(CARGO) build $(CARGOFLAGS) --manifest-path kernel/Cargo.toml
 
 .PHONY: initramfs
-initramfs: $(INITRAMFS_PATH)
+initramfs: initramfs.bin
 
 .PHONY: buildw
 buildw:
@@ -192,22 +167,7 @@ clean:
 #
 #  Build Rules
 #
-build/testing.initramfs: $(wildcard testing/*) $(wildcard testing/*/*) Makefile
-	$(PROGRESS) "BUILD" testing
-	cd testing && docker buildx build --platform $(docker_platform) -t kerla-testing .
-	$(PROGRESS) "EXPORT" testing
-	mkdir -p build
-	$(PYTHON3) tools/docker2initramfs.py $@ kerla-testing
-
-build/$(IMAGE_FILENAME).initramfs: tools/docker2initramfs.py Makefile
-	$(PROGRESS) "EXPORT" $(IMAGE)
-	mkdir -p build
-	$(PYTHON3) tools/docker2initramfs.py $@ $(IMAGE)
-
-$(DUMMY_INITRAMFS_PATH):
-	mkdir -p $(@D)
-	touch $@
-
-%.svg: %.drawio
-	$(PROGRESS) "DRAWIO" $@
-	$(DRAWIO) -x -f svg -o $@ $<
+initramfs.bin: $(wildcard packages/*.py) Makefile
+	$(PYTHON3) packages/__init__.py                       \
+		--build-dir build/initramfs                   \
+		-o initramfs.bin
